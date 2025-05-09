@@ -22,7 +22,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script{
-                    env.DATE_TAG = sh(script: "date +%Y-%m-%d".returnStdout: true).trim()
+                    env.DATE_TAG = sh(script: "date +%Y-%m-%d", returnStdout: true).trim()
                      sh """
                         docker build --platform=linux/amd64 -t ${REPO_URI}:${env.DATE_TAG} .
                         docker tag ${REPO_URI}:${env.DATE_TAG} ${REPO_URI}:latest
