@@ -13,11 +13,13 @@ pipeline {
         CLUSTER_NAME = "johan-prod"
         SERVICE_NAME = "johan-movie-service"
         CONTAINER_NAME = "johan-movie-service"
+        SLACK_CHANNEL = "learn-jenkins"
     }
 
     stages {
         stage('Compile Application') {
             steps {
+                slackSend(channel: "${SLACK_CHANNEL}", message: "📦 Starting build for *${env.JOB_NAME}* #${env.BUILD_NUMBER}")
                 sh './mvnw clean package -DskipTests'
             }
         }
@@ -30,6 +32,7 @@ pipeline {
                         docker build --platform=linux/amd64 -t ${REPO_URI}:${env.DATE_TAG} .
                         docker tag ${REPO_URI}:${env.DATE_TAG} ${REPO_URI}:latest
                     """
+                    slackSend(channel: "${SLACK_CHANNEL}", message: "🐳 Docker image built with tag `${env.DATE_TAG}`")
                 }
 
             }
@@ -45,6 +48,7 @@ pipeline {
                         sh "docker push ${REPO_URI}:${env.DATE_TAG}"
                         sh "docker push ${REPO_URI}:latest"
                     }
+                    slackSend(channel: "${SLACK_CHANNEL}", message: "📤 Pushed Docker image `${env.DATE_TAG}` and `latest` to ECR")
                 }
             }
         }
@@ -59,25 +63,25 @@ pipeline {
                         --force-new-deployment \
                         --region ${REGION}
                     """
+                slackSend(channel: "${SLACK_CHANNEL}", message: "🚀 Deployed to ECS service *${SERVICE_NAME}*")
                 }
             }
         }
 
-
-
-
-
     }
 
-    post{
-        always{
-            echo "This for always notify"
-        }
-        success{
-            echo "Nofify Success"
-        }
-        failure{
-            echo "Nofify Failure"
-        }
+    post {
+    always {
+      slackSend(
+          channel: "${SLACK_CHANNEL}",
+          message: ":information_source: Build *${env.JOB_NAME}* #${env.BUILD_NUMBER} finished.\nURL: ${env.BUILD_URL}",
+        )
+      }
+      success {
+          slackSend(channel: "${SLACK_CHANNEL}", message: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}", color: "good")
+      }
+      failure {
+          slackSend(channel: "${SLACK_CHANNEL}", message: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}", color: "danger")
+      }
     }
 }
