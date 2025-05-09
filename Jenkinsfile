@@ -39,7 +39,7 @@ pipeline {
             steps {
                 script{
                      docker.withRegistry("${REPO_REGISTRY_URL}", "${ECR_REGISTRY_CREDENTIALS}"){
-                        sh "docker push ${REPO_URI}:{env.DATE_TAG}"
+                        sh "docker push ${REPO_URI}:${env.DATE_TAG}"
                         sh "docker push ${REPO_URI}:latest"
                     }
                 }
