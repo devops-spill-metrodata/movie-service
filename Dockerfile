@@ -11,3 +11,5 @@ COPY ${JAR_FILE} movieservice.jar
 ENTRYPOINT ["java", "-jar", "/movieservice.jar"]
 
 EXPOSE 8080
+
+ssh-keyscan -H github.com >> /root/.ssh/known_hosts
